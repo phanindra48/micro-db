@@ -9,7 +9,8 @@ public class MicroDB {
   protected static final String masterTableName = "master_tables";
   public static final String masterColumnTableName = "master_columns";
   protected static final String tableLocation = "data";
-  protected static final String userData = "user_data";
+  protected static final String userDataFolder = "user_data";
+  protected static final String systemDataFolder = "system";
   protected static final String tableFormat = ".tbl";
   private static final String prompt = "mdbsql> ";
   protected static boolean isExit = false;
@@ -24,6 +25,8 @@ public class MicroDB {
     if (!folder.exists()) {
       folder.mkdir();
       folder = new File("data/user_data");
+      folder.mkdir();
+      folder = new File("data/system");
       folder.mkdir();
     }
 
