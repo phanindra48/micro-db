@@ -11,8 +11,8 @@ import java.util.Date;
 public class Utils {
   public static String getFilePath(String type, String filename) {
     String ext = MicroDB.tableFormat;
-    String folder = MicroDB.userData;
-    if (type.equals("master")) folder = ""; // MicroDB.masterData;
+    String folder = MicroDB.userDataFolder;
+    if (type.equals("master")) folder = MicroDB.systemDataFolder;
 
     Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, folder, filename + ext);
     return path.toString();
