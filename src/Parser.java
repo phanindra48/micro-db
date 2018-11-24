@@ -2,7 +2,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.File;
-import java.nio.file.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -82,8 +81,8 @@ public class Parser {
       queryString = queryString.replace(",", " , ");
       ArrayList<String> queryTokens = new ArrayList<String>(Arrays.asList(queryString.split("\\s+")));
 
-      mDBColumnFile = new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw");
-      mDBtableFile = new RandomAccessFile(MicroDB.masterTableName + MicroDB.tableFormat, "rw");
+      mDBColumnFile = new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw");
+      mDBtableFile = new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterTableName), "rw");
 
       BTree columnBTree = new BTree(mDBColumnFile, MicroDB.masterColumnTableName, true, false);
       int flag = 1;
@@ -101,8 +100,7 @@ public class Parser {
               tableBTree = columnBTree;
 
             } else {
-              Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, "user_data", tableName + MicroDB.tableFormat);
-              newTable = new RandomAccessFile(path.toString(), "rw");
+              newTable = new RandomAccessFile(Utils.getFilePath("user", tableName), "rw");
               tableBTree = new BTree(newTable, tableName);
             }
             printTable(tableBTree.printAll());
@@ -133,10 +131,10 @@ public class Parser {
               tableBTree = new BTree(mDBtableFile, tableName, false, true);
 
             } else if (tableName.trim().equals(MicroDB.masterColumnTableName)) {
-              tableBTree = new BTree(new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw"), tableName, true, false);
+              tableBTree = new BTree(new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw"), tableName, true, false);
 
             } else {
-              newTable = new RandomAccessFile(MicroDB.tableLocation + tableName + MicroDB.tableFormat, "rw");
+              newTable = new RandomAccessFile(Utils.getFilePath("user", tableName), "rw");
               tableBTree = new BTree(newTable, tableName);
             }
 
@@ -226,10 +224,10 @@ public class Parser {
                 tableBTree = new BTree(mDBtableFile, tableName, false, true);
 
               } else if (tableName.trim().equals(MicroDB.masterColumnTableName)) {
-                tableBTree = new BTree(new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw"), tableName, true, false);
+                tableBTree = new BTree(new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw"), tableName, true, false);
 
               } else {
-                newTable = new RandomAccessFile(MicroDB.tableLocation + tableName + MicroDB.tableFormat, "rw");
+                newTable = new RandomAccessFile(Utils.getFilePath("user", tableName), "rw");
                 tableBTree = new BTree(newTable, tableName);
               }
 
@@ -270,10 +268,10 @@ public class Parser {
                 tableBTree = new BTree(mDBtableFile, tableName, false, true);
 
               } else if (tableName.trim().equals(MicroDB.masterColumnTableName)) {
-                tableBTree = new BTree(new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw"), tableName, true, false);
+                tableBTree = new BTree(new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw"), tableName, true, false);
 
               } else {
-                newTable = new RandomAccessFile(MicroDB.tableLocation + tableName + MicroDB.tableFormat, "rw");
+                newTable = new RandomAccessFile(Utils.getFilePath("user", tableName), "rw");
                 tableBTree = new BTree(newTable, tableName);
               }
 
@@ -406,8 +404,8 @@ public class Parser {
   public static void parseCreateString(String createTableString) {
     try {
       int flag = 1, op = 1;
-      RandomAccessFile mDBtableFile = new RandomAccessFile(MicroDB.masterTableName + MicroDB.tableFormat, "rw");
-      RandomAccessFile mDBColumnFile = new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw");
+      RandomAccessFile mDBtableFile = new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterTableName), "rw");
+      RandomAccessFile mDBColumnFile = new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw");
 
       BTree mDBtabletree = new BTree(mDBtableFile, MicroDB.masterTableName, false, true);
       BTree mDBColumntree = new BTree(mDBColumnFile, MicroDB.masterColumnTableName, true, false);
@@ -502,8 +500,7 @@ public class Parser {
             columnBTree.insertNewRecord(rows);
           }
           tableBTree.insertNewRecord(newTable);
-          RandomAccessFile tableFile = new RandomAccessFile("data/user_data/" + createTableTokens.get(2) + ".tbl",
-              "rw");
+          RandomAccessFile tableFile = new RandomAccessFile(Utils.getFilePath("user", createTableTokens.get(2)), "rw");
           tableFile.setLength(0);
 
           new BTree(tableFile, createTableTokens.get(2)).createEmptyTable();
@@ -614,9 +611,8 @@ public class Parser {
           tableInfo.put(key, tableVal.get(key));
         }
         // String fileName = tableLocation + insertTableTokens.get(2) + tableFormat;
-        Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, "user_data", insertTableTokens.get(2) + MicroDB.tableFormat);
         try {
-          RandomAccessFile newTable = new RandomAccessFile(path.toString(), "rw");
+          RandomAccessFile newTable = new RandomAccessFile(Utils.getFilePath("user", insertTableTokens.get(2)), "rw");
           BTree tableTree = new BTree(newTable, insertTableTokens.get(2));
 
           if (tableTree.isEmptyTable()) {
@@ -758,8 +754,7 @@ public class Parser {
                 BTree tableTree = null;
                 RandomAccessFile newTable = null;
                 try {
-                  Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, "user_data", updateTableTokens.get(1) + MicroDB.tableFormat);
-                  newTable = new RandomAccessFile(path.toString(), "rw");
+                  newTable = new RandomAccessFile(Utils.getFilePath("user", updateTableTokens.get(1)), "rw");
                   tableTree = new BTree(newTable, updateTableTokens.get(1));
                 } catch (FileNotFoundException e1) {
                   System.out.println(" Table not found during update");
@@ -838,8 +833,7 @@ public class Parser {
                 BTree tableTree = null;
                 RandomAccessFile newTable = null;
                 try {
-                  Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, "user_data", updateTableTokens.get(1) + MicroDB.tableFormat);
-                  newTable = new RandomAccessFile(path.toString(), "rw");
+                  newTable = new RandomAccessFile(Utils.getFilePath("user", updateTableTokens.get(1)), "rw");
                   tableTree = new BTree(newTable, updateTableTokens.get(1));
                 } catch (FileNotFoundException e1) {
                   System.out.println(" Table not found during update");
@@ -958,10 +952,9 @@ public class Parser {
                 array.add(deleteTableTokens.get(6));
               token.put(deleteTableTokens.get(4), new ArrayList<String>(array));
               RandomAccessFile filename;
-              Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, "user_data", deleteTableTokens.get(2) + MicroDB.tableFormat);
 
               try {
-                filename = new RandomAccessFile(path.toString(), "rw");
+                filename = new RandomAccessFile(Utils.getFilePath("user", deleteTableTokens.get(2)), "rw");
 
                 BTree mDBColumnFiletree = new BTree(filename, deleteTableTokens.get(2));
                 mDBColumnFiletree.deleteRecord(token);

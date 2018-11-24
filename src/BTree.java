@@ -60,7 +60,7 @@ public class BTree {
       }
 
       if (!tableName.equals(MicroDB.masterColumnTableName) && !tableName.equals(MicroDB.masterTableName)) {
-        mDBColumnFiletree = new BTree(new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw"), MicroDB.masterColumnTableName,
+        mDBColumnFiletree = new BTree(new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw"), MicroDB.masterColumnTableName,
             true, false);
 
         for (String key : mDBColumnFiletree.getSchema(tableName).keySet()) {
@@ -78,10 +78,6 @@ public class BTree {
     this.isColumnSchema = isColSchema;
     this.isTableSchema = isTableSchema;
   }
-
-  // public boolean isPrimaryKey(String keyName) {
-  // return keyName.equals(tableKey);
-  // }
 
   public void createNewInterior(int pageNumber, int rowID, int pageRight) {
     try {
@@ -380,10 +376,6 @@ public class BTree {
       System.out.println("Unexpected Error");
     }
   }
-
-  // public void updateRecord(Map<String, ArrayList<String>> token) {
-
-  // }
 
   public int getNextMaxRowID() {
     currentPage = 1;
