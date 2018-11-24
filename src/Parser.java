@@ -2,9 +2,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +38,7 @@ public class Parser {
         break;
       case "drop":
         if (commandTokens.get(1).equals("table"))
-          dropTable(commandTokens.get(2));
+          Processor.dropTable(commandTokens.get(2));
         else
           System.out.println("Syntax Error");
         break;
@@ -103,7 +100,7 @@ public class Parser {
               newTable = new RandomAccessFile(Utils.getFilePath("user", tableName), "rw");
               tableBTree = new BTree(newTable, tableName);
             }
-            printTable(tableBTree.printAll());
+            Processor.printTable(tableBTree.printAll());
             try {
               if (newTable != null)
                 newTable.close();
@@ -182,11 +179,11 @@ public class Parser {
             LinkedHashMap<String, ArrayList<String>> op = tableBTree.searchWithPrimaryKey(token);
             List<LinkedHashMap<String, ArrayList<String>>> temp = new ArrayList<LinkedHashMap<String, ArrayList<String>>>();
             temp.add(op);
-            printTable(temp);
+            Processor.printTable(temp);
 
           } else {
             List<LinkedHashMap<String, ArrayList<String>>> op = tableBTree.searchNonPrimaryCol(arryL);
-            printTable(op);
+            Processor.printTable(op);
 
           }
           try {
@@ -242,7 +239,7 @@ public class Parser {
               if (!queryTokens.contains("where")) // condition not
               // working
               {
-                printTable(op);
+                Processor.printTable(op);
               }
               if (newTable != null)
                 newTable.close();
@@ -322,7 +319,7 @@ public class Parser {
                 }
 
               }
-              printTable(temp);
+              Processor.printTable(temp);
 
             } else {
               List<LinkedHashMap<String, ArrayList<String>>> op = tableBTree.searchNonPrimaryCol(arryL);
@@ -333,7 +330,7 @@ public class Parser {
                 }
 
               }
-              printTable(op);
+              Processor.printTable(op);
 
             }
             try {
@@ -356,49 +353,6 @@ public class Parser {
     } catch (Exception e) {
       System.out.println("Syntax Error");
     }
-  }
-
-  public static void printTable(List<LinkedHashMap<String, ArrayList<String>>> table) {
-    if (table.isEmpty()) {
-      System.out.println("0 Rows Returned");
-      return;
-    }
-
-    int size[] = new int[table.get(0).size()];
-    Arrays.fill(size, -1);
-    int k = 0;
-    for (LinkedHashMap<String, ArrayList<String>> x : table) {
-      k = 0;
-      for (String y : x.keySet()) {
-        if (size[k] < y.length()) {
-          size[k] = y.length();
-        }
-        if (size[k] < x.get(y).get(0).length()) {
-          size[k] = x.get(y).get(0).length();
-        }
-        k++;
-      }
-    }
-    for (int i : size)
-      System.out.print("+" + Utils.repeat("-", i));
-    System.out.print("+\n");
-    k = 0;
-    for (String x : table.get(0).keySet())
-      System.out.print("|" + Utils.format(x.toUpperCase(), size[k++]));
-    System.out.print("|\n");
-    for (int i : size)
-      System.out.print("+" + Utils.repeat("-", i));
-    System.out.print("+\n");
-    for (LinkedHashMap<String, ArrayList<String>> x : table) {
-      k = 0;
-      for (String y : x.keySet())
-        System.out.print("|" + Utils.format(x.get(y).get(0), size[k++]));
-      System.out.print("|\n");
-      for (int i : size)
-        System.out.print("+" + Utils.repeat("-", i));
-      System.out.print("+\n");
-    }
-
   }
 
   public static void parseCreateString(String createTableString) {
@@ -547,13 +501,13 @@ public class Parser {
             if (colName.contains(insertTableTokens.get(i)))
               colName.remove(insertTableTokens.get(i));
             if (tableInfo.keySet().contains(insertTableTokens.get(i))
-                && (checkValue(tableInfo.get(insertTableTokens.get(i)).get(0), insertTableTokens.get(k + i - 1)))
+                && (Utils.checkValue(tableInfo.get(insertTableTokens.get(i)).get(0), insertTableTokens.get(k + i - 1)))
                 && insertTableTokens.get(i + 1).equals(",")) {
               tableVal.put(insertTableTokens.get(i), new ArrayList<String>(
                   Arrays.asList(tableInfo.get(insertTableTokens.get(i)).get(0), insertTableTokens.get(k + i - 1))));
               i++;
             } else if (tableInfo.keySet().contains(insertTableTokens.get(i))
-                && (checkValue(tableInfo.get(insertTableTokens.get(i)).get(0), insertTableTokens.get(k + i - 1)))
+                && (Utils.checkValue(tableInfo.get(insertTableTokens.get(i)).get(0), insertTableTokens.get(k + i - 1)))
                 && insertTableTokens.get(i + 1).equals(")"))
               tableVal.put(insertTableTokens.get(i), new ArrayList<String>(
                   Arrays.asList(tableInfo.get(insertTableTokens.get(i)).get(0), insertTableTokens.get(k + i - 1))));
@@ -569,11 +523,11 @@ public class Parser {
         int k = 5;
         for (String x : tableInfo.keySet()) {
           if (tableInfo.get(x).get(1).equals("no")) {
-            if (checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
+            if (Utils.checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
                 && insertTableTokens.get(k + 1).equals(",")) {
               tableVal.put(x, new ArrayList<String>(Arrays.asList(tableInfo.get(x).get(0), insertTableTokens.get(k))));
               k += 2;
-            } else if (checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
+            } else if (Utils.checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
                 && insertTableTokens.get(k + 1).equals(")")) {
               tableVal.put(x, new ArrayList<String>(Arrays.asList(tableInfo.get(x).get(0), insertTableTokens.get(k))));
               k++;
@@ -581,12 +535,12 @@ public class Parser {
               flag = 1;
           } else {
             if (!insertTableTokens.get(k).equals(",") && !insertTableTokens.get(k).equals(")")) {
-              if (checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
+              if (Utils.checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
                   && insertTableTokens.get(k + 1).equals(",")) {
                 tableVal.put(x,
                     new ArrayList<String>(Arrays.asList(tableInfo.get(x).get(0), insertTableTokens.get(k))));
                 k += 2;
-              } else if (checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
+              } else if (Utils.checkValue(tableInfo.get(x).get(0), insertTableTokens.get(k))
                   && insertTableTokens.get(k + 1).equals(")")) {
                 tableVal.put(x,
                     new ArrayList<String>(Arrays.asList(tableInfo.get(x).get(0), insertTableTokens.get(k))));
@@ -651,83 +605,15 @@ public class Parser {
     }
   }
 
-  /**
-   * Validations - Type checkings
-   */
-  public static boolean checkValue(String type, String value) {
-    switch (type.toLowerCase()) {
-    case "text":
-      if ((value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'')
-          || (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"'))
-        return true;
-      break;
-    case "tinyint":
-      if (Integer.parseInt(value) >= Byte.MIN_VALUE && Integer.parseInt(value) <= Byte.MAX_VALUE)
-        return true;
-      break;
-    case "smallint":
-      if (Integer.parseInt(value) >= Short.MIN_VALUE && Integer.parseInt(value) <= Short.MAX_VALUE)
-        return true;
-      break;
-    case "int":
-      if (Integer.parseInt(value) >= Integer.MIN_VALUE && Integer.parseInt(value) <= Integer.MAX_VALUE)
-        return true;
-      break;
-    case "bigint":
-      if (Long.parseLong(value) >= Long.MIN_VALUE && Long.parseLong(value) <= Long.MAX_VALUE)
-        return true;
-      break;
-    case "real":
-      if (Float.parseFloat(value) >= Float.MIN_VALUE && Float.parseFloat(value) <= Float.MAX_VALUE)
-        return true;
-      break;
-    case "double":
-      if (Double.parseDouble(value) >= Double.MIN_VALUE && Double.parseDouble(value) <= Double.MAX_VALUE)
-        return true;
-      break;
-    case "datetime":
-      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-      try {
-        Date date = df.parse(value);
-      } catch (ParseException e) {
-        return false;
-      }
-      return true;
-    case "date":
-      SimpleDateFormat d = new SimpleDateFormat("yyyy-MM-dd");
-      try {
-        Date date = d.parse(value);
-      } catch (ParseException e) {
-        return false;
-      }
-      return true;
-    default:
-      return false;
-    }
-    return false;
-
-  }
-
   public static void parseShowString(String showTableString) {
     try {
       ArrayList<String> showTableTokens = new ArrayList<String>(Arrays.asList(showTableString.split("\\s+")));
       if (showTableTokens.get(1).equals("tables"))
-        showTables();
+        Processor.showTables();
       else
         System.out.println("Syntax Error");
     } catch (Exception e) {
       System.out.println("Syntax Error");
-    }
-  }
-  // TODO: Move to processor
-  public static void showTables() {
-    RandomAccessFile mDBtableFile;
-    try {
-      mDBtableFile = new RandomAccessFile(MicroDB.masterTableName + MicroDB.tableFormat, "rw");
-      BTree tableBTree = new BTree(mDBtableFile, MicroDB.masterTableName, false, true);
-      printTable(tableBTree.printAll());
-    } catch (FileNotFoundException e1) {
-      System.out.println(" Table file not found");
     }
   }
 
@@ -745,8 +631,8 @@ public class Parser {
           if (tableInfo != null) {
             if (tableInfo.keySet().contains(updateTableTokens.get(3))
                 && tableInfo.keySet().contains(updateTableTokens.get(7))) {
-              if (checkValue(tableInfo.get(updateTableTokens.get(3)).get(0), updateTableTokens.get(5))
-                  && checkValue(tableInfo.get(updateTableTokens.get(7)).get(0), updateTableTokens.get(9))) {
+              if (Utils.checkValue(tableInfo.get(updateTableTokens.get(3)).get(0), updateTableTokens.get(5))
+                  && Utils.checkValue(tableInfo.get(updateTableTokens.get(7)).get(0), updateTableTokens.get(9))) {
 
                 ArrayList array = new ArrayList<String>();
                 LinkedHashMap<String, ArrayList<String>> token = new LinkedHashMap<String, ArrayList<String>>();
@@ -827,7 +713,7 @@ public class Parser {
           tableInfo = columnBTree.getSchema(updateTableTokens.get(1));
           if (tableInfo != null) {
             if (tableInfo.keySet().contains(updateTableTokens.get(3))) {
-              if (checkValue(tableInfo.get(updateTableTokens.get(3)).get(0), updateTableTokens.get(5))) {
+              if (Utils.checkValue(tableInfo.get(updateTableTokens.get(3)).get(0), updateTableTokens.get(5))) {
 
                 int noOfRows = 0;
                 BTree tableTree = null;
@@ -980,76 +866,5 @@ public class Parser {
     } catch (Exception e) {
       System.out.println("Syntax Error");
     }
-  }
-
-  public static boolean dropTable(String tableName) {
-    boolean isDropped = false;
-    int flag = 1;
-    RandomAccessFile dropTableFile = null;
-    File folder = new File("data/user_data");
-    File[] listOfFiles = folder.listFiles();
-    RandomAccessFile mDBColumnFile, mDBtableFile;
-    for (int i = 0; i < listOfFiles.length; i++)
-      if (listOfFiles[i].getName().equals(tableName + ".tbl")) {
-        flag = 0;
-      }
-    if (flag == 1) {
-      System.out.println("Table does not exist");
-      return false;
-    }
-    Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, "user_data", tableName + MicroDB.tableFormat);
-    try {
-      mDBColumnFile = new RandomAccessFile(MicroDB.masterColumnTableName + MicroDB.tableFormat, "rw");
-      mDBtableFile = new RandomAccessFile(MicroDB.masterTableName + MicroDB.tableFormat, "rw");
-      dropTableFile = new RandomAccessFile(path.toString(), "rw");
-    } catch (FileNotFoundException e1) {
-      System.out.println(" Table file not found");
-      return false;
-    }
-    try {
-      dropTableFile.setLength(0);
-      if (dropTableFile != null)
-        dropTableFile.close();
-      File f = new File(path.toString());
-      f.delete();
-      System.out.println("Table Dropped");
-    } catch (IOException e) {
-      return false;
-    }
-    BTree tableBTree = new BTree(mDBtableFile, MicroDB.masterTableName, false, true);
-    BTree columnBTree = new BTree(mDBColumnFile, MicroDB.masterColumnTableName, true, false);
-    ArrayList<String> arryL = new ArrayList<String>();
-    arryL.add(new Integer(1).toString()); // search cond col ordinal
-    // position
-    arryL.add("text"); // search cond col data type
-    arryL.add(tableName); // search cond col value
-    List<LinkedHashMap<String, ArrayList<String>>> op = tableBTree.searchNonPrimaryCol(arryL);
-    for (LinkedHashMap<String, ArrayList<String>> map : op) {
-      Integer rowId = Integer.parseInt(map.get("rowid").get(0));
-      LinkedHashMap<String, ArrayList<String>> token = new LinkedHashMap<String, ArrayList<String>>();
-      ArrayList<String> array = new ArrayList<String>();
-      array.add("int");
-      array.add(rowId.toString());
-      token.put("rowid", new ArrayList<String>(array));
-      isDropped = tableBTree.deleteRecord(token);
-
-    }
-    arryL = new ArrayList<String>();
-    arryL.add(new Integer(1).toString()); // search cond col ordinal
-    // position
-    arryL.add("text"); // search cond col data type
-    arryL.add(tableName); // search cond col value
-    List<LinkedHashMap<String, ArrayList<String>>> opp = columnBTree.searchNonPrimaryCol(arryL);
-    for (LinkedHashMap<String, ArrayList<String>> map : opp) {
-      Integer rowId = Integer.parseInt(map.get("rowid").get(0));
-      LinkedHashMap<String, ArrayList<String>> token = new LinkedHashMap<String, ArrayList<String>>();
-      ArrayList<String> array = new ArrayList<String>();
-      array.add("int");
-      array.add(rowId.toString());
-      token.put("rowid", new ArrayList<String>(array));
-      isDropped = columnBTree.deleteRecord(token);
-    }
-    return isDropped;
-
   }
 }
