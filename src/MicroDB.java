@@ -55,7 +55,7 @@ public class MicroDB {
   private static void buildDBColumnTable(RandomAccessFile mDBColumnFile, BTree mDBColumnFiletree) throws Exception {
     if (mDBColumnFile.length() > 0) return;
 
-    LinkedHashMap<String, ArrayList<String>> token = new LinkedHashMap<String, ArrayList<String>>();
+    LinkedHashMap<String, ArrayList<String>> token;
 
     token = Utils.buildInsertRecord(Arrays.asList("1", MicroDB.masterTableName, "rowid", "int", "1", "no"));
     mDBColumnFiletree.createNewTableLeaf(token);
