@@ -9,6 +9,8 @@ public class MicroDB {
   protected static final String masterTableName = "master_tables";
   public static final String masterColumnTableName = "master_columns";
   protected static final String tableLocation = "data";
+  protected static final String userDataFolder = "user_data";
+  protected static final String systemDataFolder = "system";
   protected static final String tableFormat = ".tbl";
   private static final String prompt = "mdbsql> ";
   protected static boolean isExit = false;
@@ -24,11 +26,13 @@ public class MicroDB {
       folder.mkdir();
       folder = new File("data/user_data");
       folder.mkdir();
+      folder = new File("data/system");
+      folder.mkdir();
     }
 
     try {
-      dbMasterTableFile = new RandomAccessFile(masterTableName + tableFormat, "rw");
-      dbColumnFile = new RandomAccessFile(masterColumnTableName + tableFormat, "rw");
+      dbMasterTableFile = new RandomAccessFile(Utils.getFilePath("master", masterTableName), "rw");
+      dbColumnFile = new RandomAccessFile(Utils.getFilePath("master", masterColumnTableName), "rw");
 
       BTree mDBtabletree = new BTree(dbMasterTableFile, MicroDB.masterTableName, false, true);
       BTree mDBColumnFiletree = new BTree(dbColumnFile, MicroDB.masterColumnTableName, true, false);
