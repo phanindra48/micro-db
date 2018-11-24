@@ -7,6 +7,8 @@ import java.util.Arrays;
 
 public class MicroDB {
   protected static final String masterTableName = "master_tables";
+  protected static String masterTableFilePath;
+  protected static String masterColTableFilePath;
   public static final String masterColumnTableName = "master_columns";
   protected static final String tableLocation = "data";
   protected static final String userDataFolder = "user_data";
