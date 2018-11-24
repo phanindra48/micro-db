@@ -2,8 +2,19 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
 public class Utils {
+  public static String getFilePath(String type, String filename) {
+    String ext = MicroDB.tableFormat;
+    String folder = MicroDB.userData;
+    if (type.equals("master")) folder = ""; // MicroDB.masterData;
+
+    Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, folder, filename + ext);
+    return path.toString();
+  }
+
   public static String repeat(String s, int num) {
     String a = "";
     for (int i = 0; i < num; i++) {
