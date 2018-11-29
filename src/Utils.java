@@ -2,6 +2,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -16,6 +17,15 @@ public class Utils {
 
     Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, folder, filename + ext);
     return path.toString();
+  }
+
+  public static String getOSPath(String[] tokens) {
+    StringBuilder str = new StringBuilder();
+    for (String token : tokens) {
+      str.append(token);
+      str.append(File.separator);
+    }
+    return str.toString();
   }
 
   public static String repeat(String s, int num) {

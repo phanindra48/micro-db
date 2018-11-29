@@ -103,7 +103,7 @@ public class Processor {
     boolean isDropped = false;
     int flag = 1;
     RandomAccessFile dropTableFile = null;
-    File folder = new File("data/user_data");
+    File folder = new File(Utils.getOSPath(new String[] { MicroDB.tableLocation, MicroDB.userDataFolder }));
     File[] listOfFiles = folder.listFiles();
     RandomAccessFile mDBColumnFile, mDBtableFile;
     for (int i = 0; i < listOfFiles.length; i++)

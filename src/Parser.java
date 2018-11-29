@@ -383,7 +383,7 @@ public class Parser {
         return;
       }
 
-      File folder = new File("data/user_data");
+      File folder = new File(Utils.getOSPath(new String[] { MicroDB.tableLocation, MicroDB.userDataFolder }));
       File[] listOfFiles = folder.listFiles();
       for (int i = 0; i < listOfFiles.length; i++)
         if (listOfFiles[i].getName().equals(createTableTokens.get(2) + ".tbl")) {
@@ -481,7 +481,7 @@ public class Parser {
       ArrayList<String> colName = new ArrayList<String>();
       ArrayList<String> insertTableTokens = new ArrayList<String>(Arrays.asList(insertTableString.split("\\s+")));
       int flag = 1;
-      File folder = new File("data/user_data");
+      File folder = new File(Utils.getOSPath(new String[] { MicroDB.tableLocation, MicroDB.userDataFolder }));
       File[] listOfFiles = folder.listFiles();
       for (int i = 0; i < listOfFiles.length; i++)
         if (listOfFiles[i].getName().equals(insertTableTokens.get(2) + ".tbl"))

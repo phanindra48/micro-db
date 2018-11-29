@@ -12,7 +12,7 @@ public class MicroDB {
   public static final String masterColumnTableName = "master_columns";
   protected static final String tableLocation = "data";
   protected static final String userDataFolder = "user_data";
-  protected static final String systemDataFolder = "system";
+  protected static final String systemDataFolder = "catalog";
   protected static final String tableFormat = ".tbl";
   private static final String prompt = "mdbsql> ";
   protected static boolean isExit = false;
@@ -23,12 +23,12 @@ public class MicroDB {
 
   public static void main(String[] args) {
     // File system setup
-    File folder = new File("data");
+    File folder = new File(tableLocation);
     if (!folder.exists()) {
       folder.mkdir();
-      folder = new File("data/user_data");
+      folder = new File(Utils.getOSPath(new String[]{ tableLocation, userDataFolder }));
       folder.mkdir();
-      folder = new File("data/system");
+      folder = new File(Utils.getOSPath(new String[]{ tableLocation, systemDataFolder }));
       folder.mkdir();
     }
 
