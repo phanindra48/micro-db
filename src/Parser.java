@@ -430,7 +430,19 @@ public class Parser {
               i = i + 3;
               newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "no")));
               schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
-            } else if (createTableTokens.get(i + 1).equals(",")) {
+            }  else if (createTableTokens.get(i + 1).equals("default")){
+              // handle default here
+              String defaultTokenDataType = createTableTokens.get(i);
+              String defaultTokenValue = createTableTokens.get(i+2);
+//              if (assertDefaultValue(defaultTokenDataType, defaultTokenValue));
+              if (defaultTokenDataType.equalsIgnoreCase("int") && createTableTokens.get(i + 2).matches("[a-zA-Z0-9_]*$")){
+                //check if default value is an int
+                newColumns.put("default", new ArrayList<String>(Arrays.asList(defaultTokenDataType, createTableTokens.get(i + 2) )));
+                schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
+              }
+              i = i+3;
+            }
+            else if (createTableTokens.get(i + 1).equals(",")) {
               i++;
               newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "yes")));
               schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
