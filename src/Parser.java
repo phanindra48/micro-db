@@ -5,10 +5,21 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Parser {
+  // Supported data types
+  public static List<String> dataTypes = new ArrayList<String>(
+    Arrays.asList("tinyint", "smallint", "int", "bigint", "real", "double", "datetime", "date", "text")
+  );
+
+  public static List<String> contraints = new ArrayList<String>(
+    Arrays.asList("not null", "unique", "primary key", "autoincrement", "default")
+  );
+
   public static void parse(String userCommand) {
     /*
      * commandTokens is an array of Strings that contains one token per array
@@ -356,117 +367,92 @@ public class Parser {
   }
 
   public static void parseCreateString(String createTableString) {
+    Pattern topLevel = Pattern.compile("(create\\s+table\\s+([a-z0-9_]+)\\s*)(\\(([a-z0-9_\\,\\s]+)\\))");
+    Matcher matcher = topLevel.matcher(createTableString);
+    if (!matcher.find() || matcher.groupCount() < 4) {
+      System.out.println("Syntax Error. Please check and try again!");
+      return;
+    }
+    String tableName = matcher.group(2);
+
     try {
-      int flag = 1, op = 1;
       RandomAccessFile mDBtableFile = new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterTableName), "rw");
       RandomAccessFile mDBColumnFile = new RandomAccessFile(Utils.getFilePath("master", MicroDB.masterColumnTableName), "rw");
 
       BTree mDBtabletree = new BTree(mDBtableFile, MicroDB.masterTableName, false, true);
       BTree mDBColumntree = new BTree(mDBColumnFile, MicroDB.masterColumnTableName, true, false);
-      int cr = mDBColumntree.getNextMaxRowID() + 1;
-      createTableString = createTableString.replace("(", " ( ");
-      createTableString = createTableString.replace(")", " ) ");
-      createTableString = createTableString.replace(",", " , ");
+
       List<LinkedHashMap<String, ArrayList<String>>> schematableColList = new ArrayList<LinkedHashMap<String, ArrayList<String>>>();
       LinkedHashMap<String, ArrayList<String>> newTable = new LinkedHashMap<String, ArrayList<String>>();
-      LinkedHashMap<String, ArrayList<String>> newColumns = new LinkedHashMap<String, ArrayList<String>>();
-      ArrayList<String> dataType = new ArrayList<String>(
-          Arrays.asList("tinyint", "smallint", "int", "bigint", "real", "double", "datetime", "date", "text"));
-      ArrayList<String> createTableTokens = new ArrayList<String>(Arrays.asList(createTableString.split("\\s+")));
 
-      // createTableTokens.removeAll(Collections.singleton(""));
-      if (createTableTokens.get(2).trim().equals(MicroDB.masterColumnTableName)) {
-        System.out.println("Schema table name is not allowed");
-        return;
-      } else if (createTableTokens.get(2).trim().equals(MicroDB.masterTableName)) {
-        System.out.println("Schema table name is not allowed");
+      if (tableName.equals(MicroDB.masterColumnTableName) || tableName.equals(MicroDB.masterTableName)) {
+        System.out.println("You have chose a reserved keyword for table name. Please change and try again!");
         return;
       }
 
       File folder = new File(Utils.getOSPath(new String[] { MicroDB.tableLocation, MicroDB.userDataFolder }));
       File[] listOfFiles = folder.listFiles();
-      for (int i = 0; i < listOfFiles.length; i++)
-        if (listOfFiles[i].getName().equals(createTableTokens.get(2) + ".tbl")) {
-          System.out.println("Table already exists!!!");
-          flag = 0;
+      for (int i = 0; i < listOfFiles.length; i++) {
+        if (listOfFiles[i].getName().equals(tableName + ".tbl")) {
+          System.out.println(String.format("Table with name %s already exist!", tableName));
           return;
         }
-      if (!createTableTokens.get(3).equals("(") || !createTableTokens.get(1).equals("table")
-          || !createTableTokens.get(2).matches("^[a-zA-Z][a-zA-Z0-9_]*$")
-          || !createTableTokens.get(4).matches("^[a-zA-Z][a-zA-Z0-9_]*$") || !createTableTokens.get(5).equals("int")
-          || !createTableTokens.get(6).equals("primary") || !createTableTokens.get(7).equals("key"))
-        flag = 0;
-      if (flag == 1) {
-        newTable.put("rowid",
-            new ArrayList<String>(Arrays.asList("int", String.valueOf(mDBtabletree.getNextMaxRowID() + 1))));
-        newTable.put("table_name", new ArrayList<String>(Arrays.asList("text", createTableTokens.get(2))));
-        newColumns.put("rowid", new ArrayList<String>(Arrays.asList("int", String.valueOf(cr++))));
-        newColumns.put("table_name", new ArrayList<String>(Arrays.asList("text", createTableTokens.get(2))));
-        newColumns.put("column_name", new ArrayList<String>(Arrays.asList("text", createTableTokens.get(4))));
-        newColumns.put("data_type", new ArrayList<String>(Arrays.asList("text", "int")));
-        newColumns.put("ordinal_position", new ArrayList<String>(Arrays.asList("tinyint", String.valueOf(op++))));
-        newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "no")));
-        schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
-        newColumns.clear();
       }
-      if (createTableTokens.get(8).equals(","))
-        for (int i = 9; i < createTableTokens.size() && flag == 1; i++) {
-          newColumns.clear();
-          if (createTableTokens.get(i).matches("^[a-zA-Z][a-zA-Z0-9_]*$")
-              && dataType.contains(createTableTokens.get(i + 1))) {
-            newColumns.put("rowid", new ArrayList<String>(Arrays.asList("int", String.valueOf(cr++))));
-            newColumns.put("table_name", new ArrayList<String>(Arrays.asList("text", createTableTokens.get(2))));
-            newColumns.put("column_name", new ArrayList<String>(Arrays.asList("text", createTableTokens.get(i))));
-            newColumns.put("data_type", new ArrayList<String>(Arrays.asList("text", createTableTokens.get(i + 1))));
-            newColumns.put("ordinal_position", new ArrayList<String>(Arrays.asList("tinyint", String.valueOf(op++))));
-            i++;
-            if (createTableTokens.get(i + 1).equals("not") && createTableTokens.get(i + 2).equals("null")
-                && createTableTokens.get(i + 3).equals(",")) {
-              i = i + 3;
-              newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "no")));
-              schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
-            } else if (createTableTokens.get(i + 1).equals("not") && createTableTokens.get(i + 2).equals("null")
-                && createTableTokens.get(i + 3).equals(")")) {
-              i = i + 3;
-              newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "no")));
-              schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
-            } else if (createTableTokens.get(i + 1).equals(",")) {
-              i++;
-              newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "yes")));
-              schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
-            } else if (createTableTokens.get(i + 1).equals(")")) {
-              newColumns.put("is_nullable", new ArrayList<String>(Arrays.asList("text", "yes")));
-              schematableColList.add(new LinkedHashMap<String, ArrayList<String>>(newColumns));
-              i++;
-            } else
-              flag = 0;
-          } else
-            flag = 0;
-        }
-      if (flag == 0)
-        System.out.println("Syntax ERROR");
-      else {
-        try {
 
-          BTree columnBTree = new BTree(mDBColumnFile, MicroDB.masterColumnTableName, true, false);
-          BTree tableBTree = new BTree(mDBtableFile, MicroDB.masterTableName, false, true);
-          for (LinkedHashMap<String, ArrayList<String>> rows : schematableColList) {
-            columnBTree.insertNewRecord(rows);
-          }
-          tableBTree.insertNewRecord(newTable);
-          RandomAccessFile tableFile = new RandomAccessFile(Utils.getFilePath("user", createTableTokens.get(2)), "rw");
-          tableFile.setLength(0);
+      String[] tableColumns = matcher.group(4).replaceAll(" +", " ").split(",");
 
-          new BTree(tableFile, createTableTokens.get(2)).createEmptyTable();
-          if (tableBTree != null)
-            tableFile.close();
-          System.out.println("Table Created");
-        } catch (Exception e) {
-          System.out.println("Unexpected Error" + e.getMessage());
-        }
+      // First column should be of type row_id and primary key
+      Pattern primaryKeyRegex = Pattern.compile("(row_id\\s+int\\s+primary\\s+key)");
+      Matcher primaryKeyMatcher = primaryKeyRegex.matcher(tableColumns[0]);
+      if (!primaryKeyMatcher.find()) {
+        System.out.println("First column must be row_id and it should be a primary key");
+        return;
       }
+
+      /* Add records to base column table */
+      int dbRowId = mDBColumntree.getNextMaxRowID() + 1;
+
+      // Check all other columns
+      String supportedTypes = String.join("|", dataTypes);
+      Pattern columnPattern = Pattern.compile("([a-z0-9_]+)\\s+("+ supportedTypes + ")\\s*([a-z0-9\\s]*)");
+      for (int i = 0; i < tableColumns.length; i++) {
+        Matcher columnMatcher = columnPattern.matcher(tableColumns[i]);
+        if (!columnMatcher.find()) {
+          System.out.println("Syntax Error. Please check and try again!! " + columnMatcher.groupCount() + " " + columnMatcher.group(1));
+          return;
+        }
+        String columnName = columnMatcher.group(1);
+        String columnType = columnMatcher.group(2);
+        String constraintsText = columnMatcher.group(3);
+
+        String isNullable = "yes";
+        if (constraintsText.contains("not null") || constraintsText.contains("primary key")) isNullable = "no";
+        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable)));
+      }
+
+      for (LinkedHashMap<String, ArrayList<String>> row : schematableColList) {
+        mDBColumntree.insertNewRecord(row);
+      }
+
+      /* Add rows to base table */
+      newTable.put("rowid", new ArrayList<String>(Arrays.asList("int", String.valueOf(mDBtabletree.getNextMaxRowID() + 1))));
+      newTable.put("table_name", new ArrayList<String>(Arrays.asList("text", tableName)));
+      mDBtabletree.insertNewRecord(newTable);
+
+      /**
+       * Create required table and initialize with zero bytes
+       */
+      RandomAccessFile tableFile = new RandomAccessFile(Utils.getFilePath("user", tableName), "rw");
+      tableFile.setLength(0);
+
+      new BTree(tableFile, tableName).createEmptyTable();
+
+      if (tableFile != null) {
+        tableFile.close();
+      }
+      System.out.println("Table Created");
     } catch (Exception e) {
-      System.out.println("Syntax Error");
+      System.out.println("Error: " + e.getMessage());
     }
   }
 
