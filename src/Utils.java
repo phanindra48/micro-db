@@ -46,7 +46,18 @@ public class Utils {
     List<String> dataTypes = new ArrayList<String>(Arrays.asList("int", "text", "text", "text", "tinyint", "text"));
     if (values.size() < 6) return null;
     for (int i = 0; i < 6; i++) {
-      token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
+      if(i<5) token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
+
+
+      if(i==5 ){
+        if(values.get(6).equalsIgnoreCase("nodefaultvalueforthisfield")){
+          // insert is_nullable as is
+          token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
+        } else {
+          // assign the default value to is_nullable
+          token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(6))));
+        }
+      }
     }
     return token;
   }

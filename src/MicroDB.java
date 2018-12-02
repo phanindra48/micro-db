@@ -63,28 +63,28 @@ public class MicroDB {
 
     LinkedHashMap<String, ArrayList<String>> token;
 
-    token = Utils.buildInsertRecord(Arrays.asList("1", MicroDB.masterTableName, "rowid", "int", "1", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("1", MicroDB.masterTableName, "rowid", "int", "1", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.createNewTableLeaf(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("2", MicroDB.masterTableName, "table_name", "text", "2", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("2", MicroDB.masterTableName, "table_name", "text", "2", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("3", MicroDB.masterColumnTableName, "rowid", "int", "1", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("3", MicroDB.masterColumnTableName, "rowid", "int", "1", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("4", MicroDB.masterColumnTableName, "table_name", "text", "2", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("4", MicroDB.masterColumnTableName, "table_name", "text", "2", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("5", MicroDB.masterColumnTableName, "column_name", "text", "3", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("5", MicroDB.masterColumnTableName, "column_name", "text", "3", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("6", MicroDB.masterColumnTableName, "data_type", "text", "4", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("6", MicroDB.masterColumnTableName, "data_type", "text", "4", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("7", MicroDB.masterColumnTableName, "ordinal_position", "tinyint", "5", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("7", MicroDB.masterColumnTableName, "ordinal_position", "tinyint", "5", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("8", MicroDB.masterColumnTableName, "is_nullable", "text", "6", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("8", MicroDB.masterColumnTableName, "is_nullable", "text", "6", "no", "nodefaultvalueforthisfield"));
     mDBColumnFiletree.insertNewRecord(token);
   }
 

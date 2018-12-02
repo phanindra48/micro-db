@@ -426,8 +426,13 @@ public class Parser {
         String constraintsText = columnMatcher.group(3);
 
         String isNullable = "yes";
-        if (constraintsText.contains("not null") || constraintsText.contains("primary key")) isNullable = "no";
-        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable)));
+        String defaultValue = "nodefaultvalueforthisfield";
+        if (constraintsText.contains("not null") || constraintsText.contains("primary key") || constraintsText.contains("default")) isNullable = "no";
+        // default constraint
+        if (constraintsText.contains("default") && constraintsText.split("\\s+").length==2){
+          defaultValue = constraintsText.split(" ")[1];
+        }
+        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable, defaultValue)));
       }
 
       for (LinkedHashMap<String, ArrayList<String>> row : schematableColList) {
