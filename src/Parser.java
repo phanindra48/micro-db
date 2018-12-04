@@ -425,14 +425,19 @@ public class Parser {
         String columnType = columnMatcher.group(2);
         String constraintsText = columnMatcher.group(3);
 
+        /**
+         * Handle unique constraint
+         */
+        String isUnique = constraintsText.contains("unique") ? "yes" : "no";
+
         String isNullable = "yes";
-        String defaultValue = "nodefaultvalueforthisfield";
+        String defaultValue = "null";
         if (constraintsText.contains("not null") || constraintsText.contains("primary key") || constraintsText.contains("default")) isNullable = "no";
         // default constraint
         if (constraintsText.contains("default") && constraintsText.split("\\s+").length==2){
           defaultValue = constraintsText.split(" ")[1];
         }
-        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable, defaultValue)));
+        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable, defaultValue, isUnique)));
       }
 
       for (LinkedHashMap<String, ArrayList<String>> row : schematableColList) {
@@ -474,9 +479,10 @@ public class Parser {
       int flag = 1;
       File folder = new File(Utils.getOSPath(new String[] { MicroDB.tableLocation, MicroDB.userDataFolder }));
       File[] listOfFiles = folder.listFiles();
-      for (int i = 0; i < listOfFiles.length; i++)
+      for (int i = 0; i < listOfFiles.length; i++) {
         if (listOfFiles[i].getName().equals(insertTableTokens.get(2) + ".tbl"))
           flag = 0;
+      }
       if (flag == 1 || !insertTableTokens.get(1).equals("into"))
         System.out.println("Table does not exist/Syntax Error");
       else

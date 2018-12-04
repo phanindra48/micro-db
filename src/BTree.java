@@ -404,22 +404,27 @@ public class BTree {
 
     for (LinkedHashMap<String, ArrayList<String>> map : output) {
       ArrayList<String> val = map.get("column_name");
-      String key = val.get(0);
-
-      ArrayList<String> valuee = new ArrayList<String>();
-
-      ArrayList<String> dataTypeList = map.get("data_type");
-      String dataType = dataTypeList.get(0);
-      valuee.add(dataType);
-
+      ArrayList<String> defaultText = map.get("default");
       ArrayList<String> nullStringList = map.get("is_nullable");
-      String isNull = nullStringList.get(0);
-      if (isNull.equalsIgnoreCase("yes"))
-        valuee.add("NULL");
-      else
-        valuee.addAll(nullStringList);
+      ArrayList<String> dataTypeList = map.get("data_type");
+      ArrayList<String> value = new ArrayList<String>();
 
-      finalResult.put(key, valuee);
+      String key = val.get(0);
+      String dataType = dataTypeList.get(0);
+
+      boolean isNullable = nullStringList.get(0) == "yes";
+      String nullString = isNullable ? "NULL" : "no";
+      boolean hasDefault = defaultText != null && defaultText.get(0).toLowerCase() != "null";
+
+      value.add(dataType);
+
+      if (hasDefault) {
+        value.add(defaultText.get(0));
+      } else {
+        value.add(nullString);
+      }
+
+      finalResult.put(key, value);
     }
 
     return finalResult;
@@ -482,6 +487,8 @@ public class BTree {
             token.put("data_type", null);
             token.put("ordinal_position", null);
             token.put("is_nullable", null);
+            token.put("default", null);
+            token.put("is_unique", null);
           } else if (isTableSchema) {
             token = new LinkedHashMap<String, ArrayList<String>>();
             token.put("rowid", null);
@@ -700,6 +707,8 @@ public class BTree {
         token.put("data_type", null);
         token.put("ordinal_position", null);
         token.put("is_nullable", null);
+        token.put("default", null);
+        token.put("is_unique", null);
       } else if (isTableSchema) {
         token = new LinkedHashMap<String, ArrayList<String>>();
         token.put("rowid", null);
@@ -743,6 +752,8 @@ public class BTree {
         token.put("data_type", null);
         token.put("ordinal_position", null);
         token.put("is_nullable", null);
+        token.put("default", null);
+        token.put("is_unique", null);
       } else if (isTableSchema) {
         token = new LinkedHashMap<String, ArrayList<String>>();
         token.put("rowid", null);
@@ -1738,7 +1749,7 @@ public class BTree {
           no_of_Bytes += 8;
           break;
         case "text":
-          no_of_Bytes += data_type.get(1).length();
+          no_of_Bytes += data_type.get(1).length() + 10;
           break;
       }
 

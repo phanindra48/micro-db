@@ -42,22 +42,11 @@ public class Utils {
 
   public static LinkedHashMap<String, ArrayList<String>> buildInsertRecord(List<String> values) {
     LinkedHashMap<String, ArrayList<String>> token = new LinkedHashMap<String, ArrayList<String>>();
-    List<String> colNames = new ArrayList<String>(Arrays.asList("rowid", "table_name", "column_name", "data_type", "ordinal_position", "is_nullable"));
-    List<String> dataTypes = new ArrayList<String>(Arrays.asList("int", "text", "text", "text", "tinyint", "text"));
-    if (values.size() < 6) return null;
-    for (int i = 0; i < 6; i++) {
-      if(i<5) token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
-
-
-      if(i==5 ){
-        if(values.get(6).equalsIgnoreCase("nodefaultvalueforthisfield")){
-          // insert is_nullable as is
-          token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
-        } else {
-          // assign the default value to is_nullable
-          token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(6))));
-        }
-      }
+    List<String> colNames = new ArrayList<String>(Arrays.asList("rowid", "table_name", "column_name", "data_type", "ordinal_position", "is_nullable", "default", "is_unique"));
+    List<String> dataTypes = new ArrayList<String>(Arrays.asList("int", "text", "text", "text", "tinyint", "text", "text", "text"));
+    if (values.size() != colNames.size()) return null;
+    for (int i = 0; i < values.size(); i++) {
+      token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
     }
     return token;
   }
