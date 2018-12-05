@@ -14,6 +14,7 @@ public class MicroDB {
   protected static final String userDataFolder = "user_data";
   protected static final String systemDataFolder = "catalog";
   protected static final String indicesFolder = "indices";
+  protected static final String seqFolder = "sequences";
   protected static final String tableFormat = ".tbl";
   private static final String prompt = "mdbsql> ";
   protected static boolean isExit = false;
@@ -32,6 +33,8 @@ public class MicroDB {
       folder = new File(Utils.getOSPath(new String[]{ tableLocation, systemDataFolder }));
       folder.mkdir();
       folder = new File(Utils.getOSPath(new String[]{ tableLocation, indicesFolder }));
+      folder.mkdir();
+      folder = new File(Utils.getOSPath(new String[]{ tableLocation, seqFolder }));
       folder.mkdir();
     }
 
@@ -66,34 +69,34 @@ public class MicroDB {
 
     LinkedHashMap<String, ArrayList<String>> token;
 
-    token = Utils.buildInsertRecord(Arrays.asList("1", MicroDB.masterTableName, "rowid", "int", "1", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("1", MicroDB.masterTableName, "rowid", "int", "1", "no", "na", "no", "no"));
     mDBColumnFiletree.createNewTableLeaf(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("2", MicroDB.masterTableName, "table_name", "text", "2", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("2", MicroDB.masterTableName, "table_name", "text", "2", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("3", MicroDB.masterColumnTableName, "rowid", "int", "1", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("3", MicroDB.masterColumnTableName, "rowid", "int", "1", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("4", MicroDB.masterColumnTableName, "table_name", "text", "2", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("4", MicroDB.masterColumnTableName, "table_name", "text", "2", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("5", MicroDB.masterColumnTableName, "column_name", "text", "3", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("5", MicroDB.masterColumnTableName, "column_name", "text", "3", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("6", MicroDB.masterColumnTableName, "data_type", "text", "4", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("6", MicroDB.masterColumnTableName, "data_type", "text", "4", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("7", MicroDB.masterColumnTableName, "ordinal_position", "tinyint", "5", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("7", MicroDB.masterColumnTableName, "ordinal_position", "tinyint", "5", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("8", MicroDB.masterColumnTableName, "is_nullable", "text", "6", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("8", MicroDB.masterColumnTableName, "is_nullable", "text", "6", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("9", MicroDB.masterColumnTableName, "default", "text", "7", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("9", MicroDB.masterColumnTableName, "default", "text", "7", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
 
-    token = Utils.buildInsertRecord(Arrays.asList("10", MicroDB.masterColumnTableName, "is_unique", "text", "8", "no", "no", "no"));
+    token = Utils.buildInsertRecord(Arrays.asList("10", MicroDB.masterColumnTableName, "is_unique", "text", "8", "no", "na", "no", "no"));
     mDBColumnFiletree.insertNewRecord(token);
   }
 

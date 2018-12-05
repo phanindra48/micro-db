@@ -437,14 +437,22 @@ public class Parser {
           indexFile.setLength(0);
           if (indexFile != null) indexFile.close();
         }
+        String autoincrement = "no";
+        if (constraintsText.contains("autoincrement")) {
+          autoincrement = "yes";
+          int seed = 1;
+          int incrementBy = 1;
+          Processor.createSequence(tableName, columnName, seed, incrementBy);
+        }
+
         String isNullable = "yes";
-        String defaultValue = "no";
+        String defaultValue = "na";
         if (constraintsText.contains("not null") || constraintsText.contains("primary key") || constraintsText.contains("default")) isNullable = "no";
         // default constraint
-        if (constraintsText.contains("default") && constraintsText.split("\\s+").length > 2){
+        if (constraintsText.contains("default") && constraintsText.split("\\s+").length > 1){
           defaultValue = constraintsText.split(" ")[1];
         }
-        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable, defaultValue, isUnique)));
+        schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable, defaultValue, isUnique, autoincrement)));
       }
 
       for (LinkedHashMap<String, ArrayList<String>> row : schematableColList) {
@@ -630,6 +638,19 @@ public class Parser {
         try {
           RandomAccessFile newTable = new RandomAccessFile(Utils.getFilePath("user", insertTableTokens.get(2)), "rw");
           BTree tableTree = new BTree(newTable, insertTableTokens.get(2));
+
+          // if sequence related columns are null, add values
+          String tableName = insertTableTokens.get(2);
+          for (String col: tableInfo.keySet()) {
+            String colValue = tableInfo.get(col).get(1);
+            // handle only when col value is not sent
+            if (!colValue.equals("NULL")) continue;
+            int seqValue = Processor.nextValueInSequence(tableName, col);
+            // ignore if there is no seq file
+            if (seqValue == 0) continue;
+            tableInfo.put(col, new ArrayList<String>(Arrays.asList(tableInfo.get(col).get(0), String.valueOf(seqValue))));
+            Processor.updateSequence(tableName, col);
+          }
 
           if (tableTree.isEmptyTable()) {
             tableTree.createNewTableLeaf(tableInfo);

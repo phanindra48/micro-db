@@ -16,6 +16,8 @@ public class Utils {
     if (type.equals("master")) folder = MicroDB.systemDataFolder;
     else if (type.equals("index")) {
       folder = MicroDB.indicesFolder;
+    } else if (type.equals("seq")) {
+      folder = MicroDB.seqFolder;
     }
 
     Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, folder, filename + ext);
@@ -49,10 +51,15 @@ public class Utils {
     return indexName;
   }
 
+  public static String getSequenceName(String tableName, String columnName) {
+    String seqName = tableName + "_" + columnName + "_seq";
+    return seqName;
+  }
+
   public static LinkedHashMap<String, ArrayList<String>> buildInsertRecord(List<String> values) {
     LinkedHashMap<String, ArrayList<String>> token = new LinkedHashMap<String, ArrayList<String>>();
-    List<String> colNames = new ArrayList<String>(Arrays.asList("rowid", "table_name", "column_name", "data_type", "ordinal_position", "is_nullable", "default", "is_unique"));
-    List<String> dataTypes = new ArrayList<String>(Arrays.asList("int", "text", "text", "text", "tinyint", "text", "text", "text"));
+    List<String> colNames = new ArrayList<String>(Arrays.asList("rowid", "table_name", "column_name", "data_type", "ordinal_position", "is_nullable", "default", "is_unique", "auto_increment"));
+    List<String> dataTypes = new ArrayList<String>(Arrays.asList("int", "text", "text", "text", "tinyint", "text", "text", "text", "text"));
     if (values.size() != colNames.size()) return null;
     for (int i = 0; i < values.size(); i++) {
       token.put(colNames.get(i), new ArrayList<String>(Arrays.asList(dataTypes.get(i), values.get(i))));
