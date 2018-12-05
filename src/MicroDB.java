@@ -13,6 +13,7 @@ public class MicroDB {
   protected static final String tableLocation = "data";
   protected static final String userDataFolder = "user_data";
   protected static final String systemDataFolder = "catalog";
+  protected static final String indicesFolder = "indices";
   protected static final String tableFormat = ".tbl";
   private static final String prompt = "mdbsql> ";
   protected static boolean isExit = false;
@@ -29,6 +30,8 @@ public class MicroDB {
       folder = new File(Utils.getOSPath(new String[]{ tableLocation, userDataFolder }));
       folder.mkdir();
       folder = new File(Utils.getOSPath(new String[]{ tableLocation, systemDataFolder }));
+      folder.mkdir();
+      folder = new File(Utils.getOSPath(new String[]{ tableLocation, indicesFolder }));
       folder.mkdir();
     }
 
