@@ -431,10 +431,10 @@ public class Parser {
         String isUnique = constraintsText.contains("unique") ? "yes" : "no";
 
         String isNullable = "yes";
-        String defaultValue = "null";
+        String defaultValue = "no";
         if (constraintsText.contains("not null") || constraintsText.contains("primary key") || constraintsText.contains("default")) isNullable = "no";
         // default constraint
-        if (constraintsText.contains("default") && constraintsText.split("\\s+").length==2){
+        if (constraintsText.contains("default") && constraintsText.split("\\s+").length > 2){
           defaultValue = constraintsText.split(" ")[1];
         }
         schematableColList.add(Utils.buildInsertRecord(Arrays.asList(String.valueOf(dbRowId++), tableName, columnName, columnType, String.valueOf(i + 1), isNullable, defaultValue, isUnique)));

@@ -412,9 +412,9 @@ public class BTree {
       String key = val.get(0);
       String dataType = dataTypeList.get(0);
 
-      boolean isNullable = nullStringList.get(0) == "yes";
+      boolean isNullable = nullStringList.get(0).equals("yes");
       String nullString = isNullable ? "NULL" : "no";
-      boolean hasDefault = defaultText != null && defaultText.get(0).toLowerCase() != "null";
+      boolean hasDefault = defaultText != null && !defaultText.get(0).equalsIgnoreCase("no");
 
       value.add(dataType);
 
