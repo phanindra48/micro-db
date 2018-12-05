@@ -19,7 +19,7 @@ public class BTree {
 
   public static final int NODE_INTERNAL = 5;
   public static final int NODE_LEAF = 13;
-
+  public final int NODE_TYPE_OFFSET = 1;
   private RandomAccessFile binaryFile;
 
   private static final int pageSize = 512;
@@ -295,7 +295,6 @@ public class BTree {
       }
 
     } catch (IOException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
   }
@@ -334,7 +333,6 @@ public class BTree {
       binaryFile.seek(pageLocation * pageSize - pageSize + 2);
       binaryFile.writeShort(temp);
     } catch (IOException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
   }
@@ -350,7 +348,6 @@ public class BTree {
       writePageHeader(currentPage, true, 0, -1);
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
 
@@ -372,7 +369,6 @@ public class BTree {
       writeCell(currentPage, token, cellStartOffset, no_of_Bytes);
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
   }
@@ -391,7 +387,6 @@ public class BTree {
       return binaryFile.readInt();
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
     return -1;
@@ -409,22 +404,27 @@ public class BTree {
 
     for (LinkedHashMap<String, ArrayList<String>> map : output) {
       ArrayList<String> val = map.get("column_name");
-      String key = val.get(0);
-
-      ArrayList<String> valuee = new ArrayList<String>();
-
-      ArrayList<String> dataTypeList = map.get("data_type");
-      String dataType = dataTypeList.get(0);
-      valuee.add(dataType);
-
+      ArrayList<String> defaultText = map.get("default");
       ArrayList<String> nullStringList = map.get("is_nullable");
-      String isNull = nullStringList.get(0);
-      if (isNull.equalsIgnoreCase("yes"))
-        valuee.add("NULL");
-      else
-        valuee.addAll(nullStringList);
+      ArrayList<String> dataTypeList = map.get("data_type");
+      ArrayList<String> value = new ArrayList<String>();
 
-      finalResult.put(key, valuee);
+      String key = val.get(0);
+      String dataType = dataTypeList.get(0);
+
+      boolean isNullable = nullStringList.get(0).equals("yes");
+      String nullString = isNullable ? "NULL" : "no";
+      boolean hasDefault = defaultText != null && !defaultText.get(0).equalsIgnoreCase("no");
+
+      value.add(dataType);
+
+      if (hasDefault) {
+        value.add(defaultText.get(0));
+      } else {
+        value.add(nullString);
+      }
+
+      finalResult.put(key, value);
     }
 
     return finalResult;
@@ -452,7 +452,6 @@ public class BTree {
         }
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
 
@@ -488,6 +487,8 @@ public class BTree {
             token.put("data_type", null);
             token.put("ordinal_position", null);
             token.put("is_nullable", null);
+            token.put("default", null);
+            token.put("is_unique", null);
           } else if (isTableSchema) {
             token = new LinkedHashMap<String, ArrayList<String>>();
             token.put("rowid", null);
@@ -502,7 +503,6 @@ public class BTree {
         }
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
 
@@ -574,7 +574,6 @@ public class BTree {
         }
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
 
@@ -585,13 +584,9 @@ public class BTree {
   }
 
   private void searchLeftMostLeafNode() {
-
-    // TODO Auto-generated method stub
-
     routeOfLeafPage.add(currentPage);
     readPageHeader(currentPage);
     if (isLeafPage) {
-
       routeOfLeafPage.remove(routeOfLeafPage.size() - 1);
       return;
     } else {
@@ -614,7 +609,6 @@ public class BTree {
 
         }
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
     }
@@ -623,7 +617,6 @@ public class BTree {
 
   private void searchRightMostLeafNode() {
 
-    // TODO Auto-generated method stub
 
     routeOfLeafPage.add(currentPage);
     readPageHeader(currentPage);
@@ -640,7 +633,6 @@ public class BTree {
         searchRightMostLeafNode();
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
     }
@@ -684,7 +676,6 @@ public class BTree {
         currentPage = binaryFile.readInt();
 
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
     }
@@ -716,6 +707,8 @@ public class BTree {
         token.put("data_type", null);
         token.put("ordinal_position", null);
         token.put("is_nullable", null);
+        token.put("default", null);
+        token.put("is_unique", null);
       } else if (isTableSchema) {
         token = new LinkedHashMap<String, ArrayList<String>>();
         token.put("rowid", null);
@@ -759,6 +752,8 @@ public class BTree {
         token.put("data_type", null);
         token.put("ordinal_position", null);
         token.put("is_nullable", null);
+        token.put("default", null);
+        token.put("is_unique", null);
       } else if (isTableSchema) {
         token = new LinkedHashMap<String, ArrayList<String>>();
         token.put("rowid", null);
@@ -781,7 +776,6 @@ public class BTree {
 
   private LinkedHashMap<String, ArrayList<String>> populateDataWithSearch(ArrayList<String> searchCond, long cellOffset,
       LinkedHashMap<String, ArrayList<String>> token) {
-    // TODO Auto-generated method stub
 
     ArrayList<String> arrayOfValues = new ArrayList<String>();
     try {
@@ -903,148 +897,148 @@ public class BTree {
 
           switch (searchDataType.trim().toLowerCase()) {
 
-          case "tinyint":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && Integer.parseInt(serachVal) == Integer.parseInt(value)) {
-              isMatch = true;
-            }
-            break;
-          case "smallint":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && Integer.parseInt(serachVal) == Integer.parseInt(value)) {
-              isMatch = true;
-            }
-            break;
-          case "int":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && Integer.parseInt(serachVal) == Integer.parseInt(value)) {
-              isMatch = true;
-            }
-            break;
-          case "bigint":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && Long.parseLong(serachVal) == Long.parseLong(value)) {
-              isMatch = true;
-            }
-            break;
-          case "real":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && Float.parseFloat(serachVal) == Float.parseFloat(value)) {
-              isMatch = true;
-            }
-            break;
-          case "double":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && Double.parseDouble(serachVal) == Double.parseDouble(value)) {
-              isMatch = true;
-            }
-            break;
-          case "datetime":
-            long epochSeconds = 0;
-
-            if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
+            case "tinyint":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && Integer.parseInt(serachVal) == Integer.parseInt(value)) {
+                isMatch = true;
+              }
               break;
-            }
+            case "smallint":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && Integer.parseInt(serachVal) == Integer.parseInt(value)) {
+                isMatch = true;
+              }
+              break;
+            case "int":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && Integer.parseInt(serachVal) == Integer.parseInt(value)) {
+                isMatch = true;
+              }
+              break;
+            case "bigint":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && Long.parseLong(serachVal) == Long.parseLong(value)) {
+                isMatch = true;
+              }
+              break;
+            case "real":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && Float.parseFloat(serachVal) == Float.parseFloat(value)) {
+                isMatch = true;
+              }
+              break;
+            case "double":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && Double.parseDouble(serachVal) == Double.parseDouble(value)) {
+                isMatch = true;
+              }
+              break;
+            case "datetime":
+              long epochSeconds = 0;
 
-            if (value != null && !value.equalsIgnoreCase("null")) {
-              SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+              if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+                break;
+              }
 
-              Date date;
-              try {
-                date = df.parse(serachVal);
+              if (value != null && !value.equalsIgnoreCase("null")) {
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 
-                ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), zoneId);
+                Date date;
+                try {
+                  date = df.parse(serachVal);
 
-                epochSeconds = zdt.toInstant().toEpochMilli() / 1000;
-              } catch (Exception e) {
+                  ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), zoneId);
+
+                  epochSeconds = zdt.toInstant().toEpochMilli() / 1000;
+                } catch (Exception e) {
+
+                }
 
               }
 
-            }
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && (epochSeconds) == Long.parseLong(value)) {
 
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && (epochSeconds) == Long.parseLong(value)) {
+                Instant ii = Instant.ofEpochSecond(epochSeconds);
+                ZonedDateTime zdt2 = ZonedDateTime.ofInstant(ii, zoneId);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+                Date date = Date.from(zdt2.toInstant());
+                value = sdf.format(date);
 
-              Instant ii = Instant.ofEpochSecond(epochSeconds);
-              ZonedDateTime zdt2 = ZonedDateTime.ofInstant(ii, zoneId);
-              SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-              Date date = Date.from(zdt2.toInstant());
-              value = sdf.format(date);
-
-              isMatch = true;
-            }
-            break;
-          case "date":
-            long epochSecondss = 0;
-            if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
-              isMatch = true;
+                isMatch = true;
+              }
               break;
-            }
+            case "date":
+              long epochSecondss = 0;
+              if (value != null && value.equalsIgnoreCase("null") && value.equalsIgnoreCase(serachVal)) {
+                isMatch = true;
+                break;
+              }
 
-            if (value != null && !value.equalsIgnoreCase("null")) {
-              SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+              if (value != null && !value.equalsIgnoreCase("null")) {
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
-              Date date;
-              try {
-                date = df.parse(serachVal);
+                Date date;
+                try {
+                  date = df.parse(serachVal);
 
-                ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), zoneId);
+                  ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), zoneId);
 
-                epochSecondss = zdt.toInstant().toEpochMilli() / 1000;
-              } catch (Exception e) {
+                  epochSecondss = zdt.toInstant().toEpochMilli() / 1000;
+                } catch (Exception e) {
+
+                }
 
               }
 
-            }
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
+                  && (epochSecondss) == Long.parseLong(value)) {
 
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && !value.equalsIgnoreCase("null")
-                && (epochSecondss) == Long.parseLong(value)) {
+                Instant ii = Instant.ofEpochSecond(epochSecondss);
+                ZonedDateTime zdt2 = ZonedDateTime.ofInstant(ii, zoneId);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Date date = Date.from(zdt2.toInstant());
+                value = sdf.format(date);
+                isMatch = true;
+              }
+              break;
+            case "text":
+              if (value == null && value == serachVal) {
+                isMatch = true;
+              } else if (value != null && serachVal != null && serachVal.equalsIgnoreCase(value)) {
+                isMatch = true;
+              }
 
-              Instant ii = Instant.ofEpochSecond(epochSecondss);
-              ZonedDateTime zdt2 = ZonedDateTime.ofInstant(ii, zoneId);
-              SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-              Date date = Date.from(zdt2.toInstant());
-              value = sdf.format(date);
-              isMatch = true;
-            }
-            break;
-          case "text":
-            if (value == null && value == serachVal) {
-              isMatch = true;
-            } else if (value != null && serachVal != null && serachVal.equalsIgnoreCase(value)) {
-              isMatch = true;
-            }
-
-            break;
+              break;
           }
 
           break;
@@ -1186,7 +1180,6 @@ public class BTree {
 
   private LinkedHashMap<String, ArrayList<String>> populateData(long cellOffset,
       LinkedHashMap<String, ArrayList<String>> token) {
-    // TODO Auto-generated method stub
 
     ArrayList<String> arrayOfValues = new ArrayList<String>();
     try {
@@ -1324,7 +1317,6 @@ public class BTree {
   }
 
   private long[] getCellOffset(int rowId) {
-    // TODO Auto-generated method stub
     long[] retVal = new long[2];
     int cellOffset = -1;
     try {
@@ -1358,7 +1350,6 @@ public class BTree {
       }
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
 
@@ -1398,7 +1389,6 @@ public class BTree {
       cellStartOffset = ((long) binaryFile.readUnsignedShort()) - (no_of_Bytes + 6);
 
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
     if (cellStartOffset < pageHeader_offset + 2) {
@@ -1430,7 +1420,6 @@ public class BTree {
           binaryFile.seek(binaryFile.readUnsignedShort());
           binaryFile.readUnsignedShort();
           currenRowID = binaryFile.readInt();
-
         }
 
         if (point == pageHeader_offset - 2) {
@@ -1453,13 +1442,7 @@ public class BTree {
 
               binaryFile.seek(loc);
               byte[] cell = readCell(loc);
-
               page1Cells.add(cell);
-
-              // byte[] c= page1Cells.getFirst();
-              // for(byte bb : c) {
-              // System.out.println((String.format("%02x", bb)));
-              // }
 
             }
 
@@ -1487,12 +1470,6 @@ public class BTree {
               byte[] cell = readCell(loc);
 
               page1Cells.add(cell);
-
-              // byte[] c= page1Cells.getFirst();
-              // for(byte bb : c) {
-              // System.out.println((String.format("%02x", bb)));
-              // }
-
             }
           }
 
@@ -1505,22 +1482,10 @@ public class BTree {
             binaryFile.seek(point);
             binaryFile.writeShort(0);
 
-            // point = binaryFile.getFilePointer();
-
-            // binaryFile.seek(loc);
-            // binaryFile.readUnsignedShort();
-            // rowIdMiddle = binaryFile.readInt();
-
             binaryFile.seek(loc);
             byte[] cell = readCell(loc);
 
             page2Cells.add(cell);
-
-            // byte[] c= page1Cells.getFirst();
-            // for(byte bb : c) {
-            // System.out.println((String.format("%02x", bb)));
-            // }
-
           }
         }
 
@@ -1530,32 +1495,6 @@ public class BTree {
         } else {
           rowIdMiddle = rowId;
         }
-        // for (int i = 1; i <= splitCells; i++) {
-        //
-        // binaryFile.seek(point);
-        // loc = binaryFile.readUnsignedShort();
-        //
-        // binaryFile.seek(point);
-        // binaryFile.writeShort(0);
-        //
-        // point = binaryFile.getFilePointer();
-        //
-        // binaryFile.seek(loc);
-        // binaryFile.readUnsignedShort();
-        // rowIdMiddle = binaryFile.readInt();
-        //
-        //
-        // binaryFile.seek(loc);
-        // byte[] cell = readCell(loc);
-        //
-        // page1Cells.add(cell);
-        //
-        // // byte[] c= page1Cells.getFirst();
-        // // for(byte bb : c) {
-        // // System.out.println((String.format("%02x", bb)));
-        // // }
-        //
-        // }
 
         if (splitCells > 0) {
           binaryFile.seek(pageHeader_Offset_noOfCells);
@@ -1563,21 +1502,6 @@ public class BTree {
           binaryFile.seek(pageHeader_Offset_noOfCells);
           binaryFile.writeByte(noOfcells - splitCells);
         }
-
-        // for (int i = splitCells + 1; i <= no_of_Cells; i++) {
-        //
-        // binaryFile.seek(point);
-        // loc = binaryFile.readUnsignedShort();
-        //
-        // binaryFile.seek(point);
-        // binaryFile.writeShort(0);
-        //
-        // point = binaryFile.getFilePointer();
-        // binaryFile.seek(loc);
-        // byte[] cell = readCell(loc);
-        // page2Cells.add(cell);
-        //
-        // }
 
         // split the page;
         int[] pageNumbers = splitLeafPage(page1Cells, page2Cells);
@@ -1615,14 +1539,8 @@ public class BTree {
         insertNewRecordInPage(token, rowId, currentPage);
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
-
       }
-
-      // ch16PageFileExample.displayBinaryHex(binaryFile);
-      // System.exit(0);
-
     } else {
 
       writeCell(currentPage, token, cellStartOffset, no_of_Bytes);
@@ -1630,7 +1548,6 @@ public class BTree {
   }
 
   private boolean searchLeafPage(int rowId, boolean isFound) {
-    // TODO Auto-generated method stub
 
     routeOfLeafPage.add(currentPage);
     readPageHeader(currentPage);
@@ -1669,7 +1586,6 @@ public class BTree {
         }
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         System.out.println("Unexpected Error");
       }
       return isFound;
@@ -1678,7 +1594,6 @@ public class BTree {
   }
 
   private byte[] readCell(int loc) {
-    // TODO Auto-generated method stub
 
     try {
       binaryFile.seek(loc);
@@ -1702,11 +1617,10 @@ public class BTree {
   }
 
   private int[] splitLeafPage(LinkedList<byte[]> page1Cells, LinkedList<byte[]> page2Cells) {
-    // TODO Auto-generated method stub
 
     int[] pageNumbers = new int[2];
 
-    // addexisting Page
+    // add existing Page
     try {
       if (currentPage != 1) {
         pageNumbers[0] = currentPage;
@@ -1735,7 +1649,6 @@ public class BTree {
         createPage(page1Cells);
       }
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
 
     }
@@ -1764,7 +1677,6 @@ public class BTree {
       binaryFile.write(current_Cell_size + 1);
 
     } catch (IOException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
 
@@ -1778,7 +1690,6 @@ public class BTree {
       binaryFile.writeShort((int) no_of_Bytes);
       binaryFile.writeInt(rowId_or_pageNo);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
 
@@ -1791,7 +1702,6 @@ public class BTree {
       binaryFile.seek(pageHeader_Offset_startOfCell);
       binaryFile.writeShort((int) cellStartOffset);
     } catch (IOException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
     byte[] rowId = Arrays.copyOfRange(b, 2, 6);
@@ -1801,7 +1711,6 @@ public class BTree {
       binaryFile.seek(cellStartOffset);
       binaryFile.write(b);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
 
@@ -1840,7 +1749,7 @@ public class BTree {
           no_of_Bytes += 8;
           break;
         case "text":
-          no_of_Bytes += data_type.get(1).length();
+          no_of_Bytes += data_type.get(1).length() + 10;
           break;
       }
 
@@ -1852,7 +1761,6 @@ public class BTree {
   }
 
   private void writeToHeaderArray(long cellStartOffset, int rowID) {
-    // TODO Auto-generated method stub
 
     try {
       binaryFile.seek(pageHeader_Offset_noOfCells);
@@ -1884,7 +1792,6 @@ public class BTree {
   }
 
   private void writeCellContent(int pageLocation2, Map<String, ArrayList<String>> token) {
-    // TODO Auto-generated method stub
     try {
 
       binaryFile.write(token.size() - 1);// no of columns
@@ -1972,7 +1879,6 @@ public class BTree {
 
             binaryFile.writeLong(epochSeconds);
           } catch (ParseException e) {
-            // TODO Auto-generated catch block
             System.out.println("Unexpected Error");
           }
         } else {
@@ -1996,7 +1902,6 @@ public class BTree {
 
             binaryFile.writeLong(epochSeconds);
           } catch (ParseException e) {
-            // TODO Auto-generated catch block
             System.out.println("Unexpected Error");
           }
         } else {
@@ -2102,60 +2007,40 @@ public class BTree {
    * FYI: Header format - https://sqlite.org/fileformat2.html
    */
   private void writePageHeader(int pageLocation, boolean isLeaf, int no_of_Cells, int rightPage) {
-    // TODO Auto-generated method stub
-
-    try {
-
-      binaryFile.seek(pageLocation * pageSize - pageSize);
-
-      if (isLeaf) {
-        binaryFile.write(13);
-
-        pageHeader_Offset_noOfCells = binaryFile.getFilePointer();
-        binaryFile.write(no_of_Cells);
-
-        pageHeader_Offset_startOfCell = binaryFile.getFilePointer();
-        binaryFile.writeShort((int) (pageLocation * pageSize));
-
-        pageHeader_Offset_rightPagePointer = binaryFile.getFilePointer();
-
-        binaryFile.writeInt(-1);
-
-        pageHeader_array_offset = binaryFile.getFilePointer();
-        pageHeader_offset = pageHeader_array_offset;
-      } else {
-        binaryFile.write(5);
-        pageHeader_Offset_noOfCells = binaryFile.getFilePointer();
-        binaryFile.write(0);
-        pageHeader_Offset_startOfCell = binaryFile.getFilePointer();
-        binaryFile.writeShort((int) (pageLocation * pageSize));
-        binaryFile.writeInt(rightPage);
-
-        pageHeader_array_offset = binaryFile.getFilePointer();
-        pageHeader_offset = pageHeader_array_offset;
-      }
-
+    int type = NODE_LEAF;
+    int pointer = -1;
+    if (!isLeaf) {
+      type = NODE_INTERNAL;
+      pointer = rightPage;
+      no_of_Cells = 0;
     }
+    try {
+      binaryFile.seek((pageLocation - 1) * pageSize);
 
-    catch (Exception e) {
-      System.out.println("Unexpected Error");
-
+      binaryFile.write(type);
+      pageHeader_Offset_noOfCells = binaryFile.getFilePointer();
+      binaryFile.write(no_of_Cells);
+      pageHeader_Offset_startOfCell = binaryFile.getFilePointer();
+      binaryFile.writeShort((int) (pageLocation * pageSize));
+      pageHeader_Offset_rightPagePointer = binaryFile.getFilePointer();
+      binaryFile.writeInt(pointer);
+      pageHeader_array_offset = binaryFile.getFilePointer();
+      pageHeader_offset = pageHeader_array_offset;
+    } catch (Exception e) {
+      System.out.println("Error: " + e.getMessage());
     }
   }
 
   private void readPageHeader(int pageLocation) {
     try {
-
-      binaryFile.seek((currentPage * pageSize) - pageSize);
+      int currentPageIdx = currentPage - 1;
+      binaryFile.seek(currentPageIdx * pageSize);
 
       int flag = binaryFile.readUnsignedByte();
 
-      if (flag == 13)
-        isLeafPage = true;
-      else
-        isLeafPage = false;
+      isLeafPage = flag == NODE_LEAF;
 
-      pageHeader_Offset_noOfCells = ((currentPage * pageSize) - pageSize) + 1;
+      pageHeader_Offset_noOfCells = (currentPageIdx * pageSize) + NODE_TYPE_OFFSET;
       int noOfCells = binaryFile.readUnsignedByte();
       pageHeader_Offset_startOfCell = binaryFile.getFilePointer();
       binaryFile.readUnsignedShort();
@@ -2176,7 +2061,6 @@ public class BTree {
       binaryFile.close();
       return true;
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
       return false;
     }
@@ -2205,7 +2089,6 @@ public class BTree {
 
       }
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       System.out.println("Unexpected Error");
     }
   }
