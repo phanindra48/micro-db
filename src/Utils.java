@@ -14,6 +14,9 @@ public class Utils {
     String ext = MicroDB.tableFormat;
     String folder = MicroDB.userDataFolder;
     if (type.equals("master")) folder = MicroDB.systemDataFolder;
+    else if (type.equals("index")) {
+      folder = MicroDB.indicesFolder;
+    }
 
     Path path = FileSystems.getDefault().getPath(MicroDB.tableLocation, folder, filename + ext);
     return path.toString();
@@ -38,6 +41,12 @@ public class Utils {
 
   public static String format(String string, int length) {
     return String.format("%1$" + length + "s", string);
+  }
+
+  public static String getIndexName(String tableName, String[] columnList) {
+    String indexName = "unique_" + tableName + "_";
+    indexName += String.join("_", columnList) + "_idx";
+    return indexName;
   }
 
   public static LinkedHashMap<String, ArrayList<String>> buildInsertRecord(List<String> values) {

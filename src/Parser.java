@@ -39,7 +39,9 @@ public class Parser {
         parseQueryString(userCommand);
         break;
       case "create":
-        parseCreateString(userCommand);
+        if (commandTokens.get(1).equals("table"))
+          parseCreateString(userCommand);
+        else parseCreateIndexString(userCommand);
         break;
       case "insert":
         parseInsertString(userCommand);
@@ -429,7 +431,12 @@ public class Parser {
          * Handle unique constraint
          */
         String isUnique = constraintsText.contains("unique") ? "yes" : "no";
-
+        if (constraintsText.contains("unique")) {
+          String indexName = Utils.getIndexName(tableName, new String[]{ columnName});
+          RandomAccessFile indexFile = new RandomAccessFile(Utils.getFilePath("index", indexName), "rw");
+          indexFile.setLength(0);
+          if (indexFile != null) indexFile.close();
+        }
         String isNullable = "yes";
         String defaultValue = "no";
         if (constraintsText.contains("not null") || constraintsText.contains("primary key") || constraintsText.contains("default")) isNullable = "no";
@@ -461,6 +468,64 @@ public class Parser {
         tableFile.close();
       }
       System.out.println("Table Created");
+    } catch (Exception e) {
+      System.out.println("Error: " + e.getMessage());
+    }
+  }
+
+  public static void parseCreateIndexString(String command) {
+    // CREATE [UNIQUE] INDEX ON table_name (column_list);
+    command = command.replaceAll(" +", " ");
+    Pattern topLevel = Pattern.compile("create\\s(unique\\s)?index on\\s([a-z0-9_]+)\\s(\\(([a-z0-9_,\\s]+)\\))");
+    Matcher matcher = topLevel.matcher(command);
+    if (!matcher.find() || matcher.groupCount() < 4) {
+      System.out.println("Syntax Error. Please check and try again!");
+      return;
+    }
+
+    String tableName = matcher.group(2);
+    try {
+      if (tableName.equals(MicroDB.masterColumnTableName) || tableName.equals(MicroDB.masterTableName)) {
+        System.out.println("You cannot create index on master tables.");
+        return;
+      }
+
+      File folder = new File(Utils.getOSPath(new String[] { MicroDB.tableLocation, MicroDB.userDataFolder }));
+      File[] listOfFiles = folder.listFiles();
+      boolean tableFound = false;
+      for (int i = 0; i < listOfFiles.length; i++) {
+        if (listOfFiles[i].getName().equals(tableName + ".tbl")) {
+          tableFound = true;
+          break;
+        }
+      }
+
+      if (!tableFound) {
+        System.out.println(String.format("Table %s not found in database!", tableName));
+        return;
+      }
+
+      String[] columnList = matcher.group(4).split(",");
+
+      if (columnList.length < 1) {
+        System.out.println("Columns should be specified");
+        return;
+      }
+
+      String indexName = Utils.getIndexName(tableName, columnList);
+
+      /**
+       * Create index file and initialize with zero bytes
+       */
+      RandomAccessFile indexFile = new RandomAccessFile(Utils.getFilePath("index", indexName), "rw");
+      indexFile.setLength(0);
+
+      // new BTree(indexFile, indexName).createEmptyTable();
+
+      if (indexFile != null) {
+        indexFile.close();
+      }
+      System.out.println(String.format("Index %s created", indexName));
     } catch (Exception e) {
       System.out.println("Error: " + e.getMessage());
     }
