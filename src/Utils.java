@@ -75,9 +75,9 @@ public class Utils {
       case "text":
         if ((value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'')
             || (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"'))
-          return true;
+        		return true;
         break;
-      case "tinyint":
+	case "tinyint":
         if (Integer.parseInt(value) >= Byte.MIN_VALUE && Integer.parseInt(value) <= Byte.MAX_VALUE)
           return true;
         break;
@@ -104,6 +104,7 @@ public class Utils {
       case "datetime":
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         try {
+          if(value.contains("\'")) value = value.replaceAll("\'","");
           Date date = df.parse(value);
         } catch (ParseException e) {
           return false;
@@ -112,6 +113,7 @@ public class Utils {
       case "date":
         SimpleDateFormat d = new SimpleDateFormat("yyyy-MM-dd");
         try {
+          if(value.contains("\'")) value = value.replaceAll("\'","");
           Date date = d.parse(value);
         } catch (ParseException e) {
           return false;
