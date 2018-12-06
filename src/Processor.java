@@ -168,4 +168,85 @@ public class Processor {
     }
     return isDropped;
   }
+
+  public static void createSequence(String tableName, String colName, int seed, int incrementBy) throws IOException {
+    String seqName = Utils.getSequenceName(tableName, colName);
+    try {
+      RandomAccessFile seqFile = new RandomAccessFile(Utils.getFilePath("seq", seqName), "rw");
+      seqFile.setLength(0);
+      seqFile.setLength(MicroDB.pageSize);
+      seqFile.seek(0);
+      seqFile.writeInt(seed);
+      seqFile.writeInt(incrementBy);
+      seqFile.writeInt(0);
+      if (seqFile != null) seqFile.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static int nextValueInSequence(String tableName, String colName) throws IOException {
+    String seqName = Utils.getSequenceName(tableName, colName);
+
+    int value = 0;
+    try {
+      RandomAccessFile seqFile = new RandomAccessFile(Utils.getFilePath("seq", seqName), "rw");
+      seqFile.seek(0);
+      int seed = seqFile.readInt();
+      int incrementBy =  seqFile.readInt();
+      // System.out.println("increment by: " + incrementBy + " " + seed);
+      value = seqFile.readInt();
+      if (value == 0) value = seed;
+      else value += incrementBy;
+      if (seqFile != null) seqFile.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return value;
+  }
+
+  public static void updateSequence(String tableName, String colName) throws IOException {
+    String seqName = Utils.getSequenceName(tableName, colName);
+    int value = 0;
+    try {
+      RandomAccessFile seqFile = new RandomAccessFile(Utils.getFilePath("seq", seqName), "rw");
+      seqFile.seek(0);
+      int seed = seqFile.readInt();
+      int incrementBy =  seqFile.readInt();
+      value = seqFile.readInt();
+
+      if (value == 0) value = seed;
+      else value += incrementBy;
+
+      seqFile.seek(0);
+      seqFile.writeInt(seed);
+      seqFile.writeInt(incrementBy);
+      seqFile.writeInt(value);
+      if (seqFile != null) seqFile.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    return;
+  }
+
+  // public static void main(String[] args) throws IOException {
+  //   String tableName = "tableName";
+  //   String colName = "colName";
+  //   createSequence(tableName, colName, 1, 1);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   updateSequence(tableName, colName);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   updateSequence(tableName, colName);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   updateSequence(tableName, colName);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   updateSequence(tableName, colName);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   updateSequence(tableName, colName);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   updateSequence(tableName, colName);
+  //   System.out.println("Seq value: " + nextValueInSequence(tableName, colName));
+  //   return;
+  // }
+
 }

@@ -414,7 +414,7 @@ public class BTree {
 
       boolean isNullable = nullStringList.get(0).equals("yes");
       String nullString = isNullable ? "NULL" : "no";
-      boolean hasDefault = defaultText != null && !defaultText.get(0).equalsIgnoreCase("no");
+      boolean hasDefault = defaultText != null && !defaultText.get(0).equalsIgnoreCase("na");
 
       value.add(dataType);
 
@@ -489,6 +489,7 @@ public class BTree {
             token.put("is_nullable", null);
             token.put("default", null);
             token.put("is_unique", null);
+            token.put("auto_increment", null);
           } else if (isTableSchema) {
             token = new LinkedHashMap<String, ArrayList<String>>();
             token.put("rowid", null);
@@ -709,6 +710,7 @@ public class BTree {
         token.put("is_nullable", null);
         token.put("default", null);
         token.put("is_unique", null);
+        token.put("auto_increment", null);
       } else if (isTableSchema) {
         token = new LinkedHashMap<String, ArrayList<String>>();
         token.put("rowid", null);
@@ -754,6 +756,7 @@ public class BTree {
         token.put("is_nullable", null);
         token.put("default", null);
         token.put("is_unique", null);
+        token.put("auto_increment", null);
       } else if (isTableSchema) {
         token = new LinkedHashMap<String, ArrayList<String>>();
         token.put("rowid", null);
