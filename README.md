@@ -103,6 +103,16 @@ To Run `java -cp bin MicroDB`
   DROP TABLE test1;
 ```
 
+### History
+
+To execute recent commands
+
+```SQL
+  history;
+  !1;
+  !2;
+```
+
 ### For clean exit
 
 ```SQL

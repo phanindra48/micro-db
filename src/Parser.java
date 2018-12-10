@@ -73,6 +73,9 @@ public class Parser {
       case "quit":
         MicroDB.isExit = true;
         break;
+      case "history":
+        Processor.printHistory();
+        break;
       default:
         System.out.println("I didn't understand the command: \"" + userCommand + "\"");
         break;

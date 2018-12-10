@@ -21,7 +21,7 @@ public class Processor {
     System.out.println("All commands below are case insensitive");
     System.out.println();
     System.out.println(
-        "\tCREATE TABLE table_name (column_name1 INT PRIMARY KEY, column_name2 data_type2 [NOT NULL],... );                         Create a new table schema if not already exist.");
+        "\tCREATE TABLE table_name (row_id INT PRIMARY KEY, column_name1 data_type2 [NOT NULL][UNIQUE][AUTOINCREMENT][DEFAULT],... );                         Create a new table schema if not already exist.");
     System.out.println("\tSELECT * FROM table_name;                        Display all records in the table.");
     System.out
         .println("\tSELECT * FROM table_name WHERE <column_name> = <value>;  Display records whose column is <value>.");
@@ -35,11 +35,23 @@ public class Processor {
     System.out
         .println("\tSHOW TABLES;                                     Displays a list of all tables in the Database.");
     System.out.println("\tVERSION;                                         Show the program version.");
+    System.out.println("\tHISTORY;                                         Show all recent commands.");
     System.out.println("\tHELP;                                            Show this help information");
     System.out.println("\tEXIT;                                            Exit the program");
     System.out.println();
     System.out.println();
     System.out.println(Utils.repeat("*", 80));
+  }
+
+  public static void printHistory() {
+    int len = MicroDB.history.size();
+    if (len == 0) {
+      System.out.println("No history found!");
+      return;
+    }
+    for (int i = 0; i < len; i++) {
+      System.out.println((i + 1) + "\t" + MicroDB.history.get(i));
+    }
   }
 
   /**

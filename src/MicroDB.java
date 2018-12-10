@@ -20,6 +20,7 @@ public class MicroDB {
   protected static boolean isExit = false;
   protected static RandomAccessFile dbColumnFile;
   protected static RandomAccessFile dbMasterTableFile;
+  protected static ArrayList<String> history;
   static long pageSize = 512;
   static Scanner scanner = new Scanner(System.in).useDelimiter(";");
 
@@ -37,6 +38,8 @@ public class MicroDB {
       folder = new File(Utils.getOSPath(new String[]{ tableLocation, seqFolder }));
       folder.mkdir();
     }
+
+    history = new ArrayList<>();
 
     try {
       dbMasterTableFile = new RandomAccessFile(Utils.getFilePath("master", masterTableName), "rw");
@@ -58,7 +61,27 @@ public class MicroDB {
     String userCommand = "";
     while (!isExit) {
       System.out.print(prompt);
-      userCommand = scanner.next().replace("\n", "").replace("\r", "").trim().toLowerCase();
+      userCommand = scanner.next().trim().replace("\n", "").replace("\r", "").toLowerCase();
+      /* Handle executing recent commands from history */
+      if (
+        userCommand.length() < 5 &&
+        userCommand.charAt(0) == '!' &&
+        (
+          Integer.valueOf(userCommand.substring(1)) > 0 ||
+          Integer.valueOf(userCommand.substring(1)) < 0
+        )
+      ) {
+        int index = Integer.parseInt(userCommand.substring(1));
+        if (index < 0) index = history.size() + index;
+        else index--;
+        if (index < 0 || history.size() <= index) {
+          System.out.println("No history found at that index");
+          continue;
+        }
+        userCommand = history.get(index);
+
+      }
+      if (!userCommand.equals("history")) history.add(userCommand);
       Parser.parse(userCommand);
     }
     System.out.println("Exiting...");
